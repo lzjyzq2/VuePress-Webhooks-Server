@@ -1,0 +1,19 @@
+{
+  "name": "VuePress-Webhooks-Builder",
+  "version": "1.0.0",
+  "description": "According to the call of webhook, pull the documents in the repository and compile them",
+  "main": "index.js",
+  "scripts": {
+    "server:run": "node index.js",
+    "docs:dev": "vuepress dev docs",
+    "docs:build": "vuepress build docs"
+  },
+  "author": "lzjyzq2",
+  "license": "Apache License 2.0",
+  "devDependencies": {
+    "vuepress": "^1.8.2"
+  },
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}
