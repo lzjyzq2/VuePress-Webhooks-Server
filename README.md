@@ -1,4 +1,4 @@
-# VuePress-Webhooks-Builder
+# VuePress-Webhooks-Server
 根据webhook的调用，拉取仓库中的文档并进行编译，同时允许通过Web访问编译后网页文件。  
 According to the call of webhook, pull the documents in the repository and compile them, the compiled web files can be accessed through web pages.  
 ## 用法

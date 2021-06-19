@@ -1,5 +1,5 @@
 {
-  "name": "VuePress-Webhooks-Server",
+  "name": "vuepress-webhooks-server",
   "version": "1.0.0",
   "description": "According to the call of webhook, pull the documents in the repository and compile them, the compiled web files can be accessed through web pages.",
   "main": "index.js",
