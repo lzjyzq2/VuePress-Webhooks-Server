@@ -17,6 +17,8 @@ module.exports = {
     validators: {
         "github": "./validator/github.js",
         "gitea": "./validator/gitea.js"
+        // 使用自带github、gitea验证器时，应配置
+        // platform、key、type、git
     },
     options: {
 

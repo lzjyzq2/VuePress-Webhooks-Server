@@ -1,10 +1,13 @@
 {
-  "name": "VuePress-Webhooks-Builder",
+  "name": "VuePress-Webhooks-Server",
   "version": "1.0.0",
-  "description": "According to the call of webhook, pull the documents in the repository and compile them",
+  "description": "According to the call of webhook, pull the documents in the repository and compile them, the compiled web files can be accessed through web pages.",
   "main": "index.js",
+  "bin": {
+    "VuepressWS": "./cli/cli.js"
+  },
   "scripts": {
-    "server:run": "node index.js",
+    "run": "node index.js",
     "docs:dev": "vuepress dev docs",
     "docs:build": "vuepress build docs"
   },
@@ -15,5 +18,9 @@
   },
   "dependencies": {
     "express": "^4.17.1"
-  }
+  },
+  "keywords": [
+    "vuepress",
+    "webhook"
+  ]
 }

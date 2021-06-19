@@ -1,3 +1,4 @@
+@echo off
 chcp 65001
 rem 进入docs文件夹
 cd ../
