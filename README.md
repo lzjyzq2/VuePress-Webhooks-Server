@@ -117,19 +117,20 @@ module.export = function(ctx,req){
 ```
 - 配置验证器
 ```js
-// 在modules.js中进行验证器配置
+// 在config.js中进行验证器配置
 module.exports = {
+
+    // 装载验证器
     plugins: {
         "github": "./validator/github.js",
         "gitea":"./validator/gitea.js"
         // platform: js file path
+    },
+    options:{
+        // 配置要使用的验证器
+        // 以gitea为例
+        platform:"gitea"
+        ......
     }
 }
-```
-- 在`config.json`中配置将要使用的验证器
-```json
-...
-// 以gitea为例
-"platform":"gitea",
-...
 ```
