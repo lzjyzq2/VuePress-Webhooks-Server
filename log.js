@@ -5,12 +5,12 @@ const path = require('path');
 const log = function ({
     $config
 }) {
-    let log = $config.log;
-    const {
+    let log = $config.options.log;
+    const { options: {
         logFormatter,
         logTimeFormatter,
-        logStorage = './log/log.log'
-    } = $config;
+        logStorage
+    } } = $config;
 
     const timeRegExp = new RegExp('\\[time\\]', 'gm');
     const levelRegExp = new RegExp('\\[level\\]', 'gm');
@@ -23,8 +23,8 @@ const log = function ({
         fs.mkdirSync(dirpath);
     }
     let dirPath = path.dirname(logStorage);
-    fs.existsSync(dirPath) == false &&_mkdirs(dirPath);
-    
+    fs.existsSync(dirPath) == false && _mkdirs(dirPath);
+
     const error = function (message) {
         logger('error', message);
     }

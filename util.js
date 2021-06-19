@@ -1,3 +1,8 @@
+const fs = require("fs");
+const path = require("path");
+const defaultConfig = require("./defaultConfig");
+const config = require("./defaultConfig");
+
 /**
  * 格式化时间与日期
  * yyyy - 年
@@ -41,6 +46,19 @@
     return format;
 }
 
+const loadConfig = function (){
+    let configPath = __dirname+path.sep+"config.js";
+    console.log(configPath);
+    if(fs.existsSync(configPath)){
+        let config = require(configPath);
+        config = Object.assign(defaultConfig,config);
+        return config;
+    }else{
+        return defaultConfig;
+    }
+}
+
 module.exports = {
     formatDate: formatDate,
+    loadConfig: loadConfig
 }

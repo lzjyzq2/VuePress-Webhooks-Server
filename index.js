@@ -1,48 +1,40 @@
 const express = require('express');
-const modules = require('./modules.js');
 const exec = require('child_process');
 const utils = require('./util.js');
-const fs = require("fs");
 const log = require('./log.js');
-const app = express();
-const plugins = {};
-
 
 const os = /^win/.test(process.platform) ? 'windows' : 'other'
 const _shell = os === 'windows' ? 'pull.bat' : 'pull.sh'
 
-let configFile = fs.readFileSync('config.json');
-let tmpConfig = JSON.parse(configFile);
+// 初始化配置
+const config = utils.loadConfig();
 
-const config = {
-    port="3000",
-    key="",
+const { options: {
+    port,
+    public,
     platform,
-    method="POST",
-    type="json",
+    method,
+    type,
+    customUrl,
     responseSucc,
     responseFail,
     responseErr,
-    public = "./docs/.vuepress/dist",
-    git,
-    customUrl = '/webhook',
-    logFormatter="[[time]]:[[level]]: [message]",
-    logTimeFormatter="yyyy-MM-dd hh:mm:ss",
-    logStorage="./log/log.log"
-} = tmpConfig;
+} } = config;
 
-if(type==='json'){
+// 初始化express
+const app = express();
+if (type === 'json') {
     app.use(express.json())
-}else if(type==='urlencoded'){
+} else if (type === 'urlencoded') {
     app.use(express.urlencoded({ extended: true }))
 }
 
-for (let plugin in modules.plugins) {
-    plugins[plugin] = require(modules.plugins[plugin]);
+// 初始化验证器
+const validators = {};
+for (let validator in config.validators) {
+    validators[validator] = require(config.validators[validator]);
 }
-
-
-
+// 初始化上下文
 const ctx = {
     $config: config,
     $express: app,
@@ -50,10 +42,11 @@ const ctx = {
     $process: process,
 };
 
+
 const logger = log(ctx);
 ctx.$logger = logger;
 
-logger.info("working in "+__dirname);
+logger.info("working in " + __dirname);
 app.use(express.static(public))
 
 app.get('/helloworld', (req, res) => {
@@ -62,9 +55,9 @@ app.get('/helloworld', (req, res) => {
 
 app.all(customUrl, (req, res) => {
     if (method === req.method) {
-        if (plugins[platform](ctx, req)) {
+        if (validators[platform](ctx, req)) {
             res.send(JSON.stringify(responseSucc));
-            exec.execFile(_shell, null, {cwd:__dirname+"/shell"}, function (error, stdout, stderr) {
+            exec.execFile(_shell, null, { cwd: __dirname + "/shell" }, function (error, stdout, stderr) {
                 if (error) {
                     logger.error(error);
                 }
@@ -72,7 +65,7 @@ app.all(customUrl, (req, res) => {
                 if (stderr) {
                     logger.error(stderr);
                 }
-                if(!error&&!stderr){
+                if (!error && !stderr) {
                     logger.info("build successful");
                 }
             })

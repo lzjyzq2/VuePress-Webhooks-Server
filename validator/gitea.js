@@ -10,15 +10,13 @@ const gitub = function ({
 
     $logger.info("start validation");
 
-    if (header['x-gitea-event']&& header['content-type'].indexOf($config.type) != -1 && verift_repository(body,$config.git)) {
+    if (header['x-gitea-event']&& header['content-type'].indexOf($config.options.type) != -1 && verift_repository(body,$config.options.git)) {
 
         $logger.info("Delivery:" + header['x-gitea-delivery']);
 
-        let signature = verify_signature(JSON.stringify(body,null,2).trim(), $config.key, 'sha256');
+        let signature = verify_signature(JSON.stringify(body,null,2).trim(), $config.options.key, 'sha256');
 
-        $logger.info(`signature:${signature}    x-signature:${header['x-gitea-signature']}`)
-
-        if (signature === header['x-gitea-signature']&&body['secret']===$config.key) {
+        if (signature === header['x-gitea-signature']&&body['secret']===$config.options.key) {
             $logger.info("validation successful");
             flag = true;
         }

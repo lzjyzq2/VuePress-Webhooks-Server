@@ -8,9 +8,9 @@ const gitub = function ({
     let header = req.headers;
     let body = req.body;
     $logger.info("start validation");
-    if (/^GitHub-Hookshot/.test(header['user-agent']) && header['content-type'].indexOf($config.type) != -1 && verift_repository(body,$config.git)) {
+    if (/^GitHub-Hookshot/.test(header['user-agent']) && header['content-type'].indexOf($config.options.type) != -1 && verift_repository(body,$config.options.git)) {
         $logger.info("Delivery:" + header['x-github-delivery']);
-        let signature = verify_signature(JSON.stringify(body), $config.key, 'sha256');
+        let signature = verify_signature(JSON.stringify(body), $config.options.key, 'sha256');
         if ('sha256=' + signature === header['x-hub-signature-256']) {
             $logger.info("validation successful");
             flag = true;
