@@ -46,7 +46,7 @@ const ctx = {
 const logger = log(ctx);
 ctx.$logger = logger;
 
-logger.info("working in " + __dirname);
+logger.info("working in " + process.cwd());
 app.use(express.static(public))
 
 app.get('/helloworld', (req, res) => {

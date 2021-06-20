@@ -1,7 +1,6 @@
 const fs = require("fs");
 const path = require("path");
 const defaultConfig = require("./defaultConfig");
-const config = require("./defaultConfig");
 
 /**
  * 格式化时间与日期
@@ -47,7 +46,7 @@ const config = require("./defaultConfig");
 }
 
 const loadConfig = function (){
-    let configPath = __dirname+path.sep+"config.js";
+    let configPath = process.cwd()+path.sep+"config.js";
     console.log(configPath);
     if(fs.existsSync(configPath)){
         let config = require(configPath);
