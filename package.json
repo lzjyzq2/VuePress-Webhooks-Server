@@ -1,6 +1,6 @@
 {
   "name": "vuepress-webhooks-server",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "According to the call of webhook, pull the documents in the repository and compile them, the compiled web files can be accessed through web pages.",
   "main": "index.js",
   "bin": {
@@ -12,12 +12,15 @@
     "docs:build": "vuepress build docs"
   },
   "author": "lzjyzq2",
-  "license": "Apache License 2.0",
-  "devDependencies": {
-    "vuepress": "^1.8.2"
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lzjyzq2/VuePress-Webhooks-Server.git"
   },
   "dependencies": {
-    "express": "^4.17.1"
+    "commander": "^7.2.0",
+    "express": "^4.17.1",
+    "vuepress": "^1.8.2"
   },
   "keywords": [
     "vuepress",
