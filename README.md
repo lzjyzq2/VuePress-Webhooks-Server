@@ -3,23 +3,28 @@
 According to the call of webhook, pull the documents in the repository and compile them, the compiled web files can be accessed through web pages.  
 ## 用法
 ### 使用`npm`
-- 
-### 使用源代码
-- 克隆项目到本地
+- 创建一个目录
 ```
-git clone https://github.com/lzjyzq2/VuePress-Webhooks-Builder.git
+mkdir vuepress-starter && cd vuepress-starter
 ```
-- 安装依赖
+- 使用包管理器进行初始化
 ```
-npm install
+npm init
 ```
+- 将 VuePress-Webhooks-Server 安装为本地依赖
+```
+npm i vuepress-webhooks-server
+```
+- 克隆文档到本地
+    > 若无应先创建
+    - 将文档仓库重命名为`docs`（Vuepress需要）
 - 增加`config.js`
 其中`platform`、`key`、`git`为必选配置,其他选项视情况自行配置。
 ```js
 module.exports = {
     validators: {
-        "github": "./validator/github.js",
-        "gitea": "./validator/gitea.js"
+        "github": "vuepress-webhooks-server/validator/github.js",
+        "gitea": "vuepress-webhooks-server/validator/gitea.js"
         // 使用自带github、gitea验证器时，应配置
         // platform、key、type、git
     },
@@ -73,8 +78,62 @@ module.exports = {
     }
 }
 ```
+- 在`package.json`中添加`scripts`
+```json
+"scripts": {
+    "docs:dev": "vuepress dev docs",
+    "docs:build": "vuepress build docs",
+    "VuepressWS": "VuepressWS run"
+  }
+```
+- 初次编译
+```
+npm run docs:build
+```
+- 启动服务
+```
+npm run VuepressWS
+```
+- 是否启动成功
+```
+visit http://[host]:[port]/helloworld
+```
+- 目录应如下
+```
+  -- vuepress-starter
+   |-- docs
+        |-- ......
+   |
+   |-- config.js
+   |-- package-lock.json
+   |-- package.json
+   |-- log  // 默认
+        |-- log.log
+```
+- 配置文档仓库WebHook
+    > 注意：使用前应确保代码托管平台能够访问到Webhook地址。
+- end
+### 使用源代码
+- 克隆项目到本地
+```
+git clone https://github.com/lzjyzq2/VuePress-Webhooks-Builder.git
+```
+- 安装依赖
+```
+npm install
+```
+- 增加`config.js`  
+同`使用npm`，应注意`validators`中路径。
+```
+validators: {
+    "github": "./validator/github.js",
+    "gitea": "./validator/github.js"
+    // 使用自带github、gitea验证器时，应配置
+    // platform、key、type、git
+},
+```
 - 修改shell命令(可选)
-    > 脚本位于`validator`文件夹下
+    > 脚本位于`shell`文件夹下
     - `pull.bat` - windows下拉取仓库脚本
     - `pull.sh`  - 其他操作系统下拉取仓库脚本
 - 手动拉取文档仓库至目录下
@@ -112,6 +171,7 @@ visit http://[host]:[port]/helloworld
 ```
 - 配置文档仓库WebHook
     > 注意：使用前应确保代码托管平台能够访问到Webhook地址。
+- end
 ## 自定义验证器
 - 自行建立的验证器，应导出一个函数，并具有返回值。用以确认该请求是否验证通过。
 ```js
