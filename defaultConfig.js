@@ -16,6 +16,12 @@ module.exports = {
         type: "json",
 
         customUrl: "/webhook",
+     
+        docs:"./docs",
+        
+        workPath:process.cwd(),
+        
+        buildCmd:"npm run vuepress build docs",
 
         responseSucc: {
             code: 200,

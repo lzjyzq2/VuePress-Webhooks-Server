@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const defaultConfig = require("./defaultConfig");
-
+const ejs = require("ejs");
 /**
  * 格式化时间与日期
  * yyyy - 年
@@ -29,7 +29,7 @@ const defaultConfig = require("./defaultConfig");
  *    // r6 = "20210508114252";
  * }
  */
- const formatDate = (date, format = 'yyyy-MM-dd hh:mm:ss') => {
+const formatDate = (date, format = 'yyyy-MM-dd hh:mm:ss') => {
     var o = {
         "M+": date.getMonth() + 1, //月份
         "d+": date.getDate(), //日
@@ -45,19 +45,57 @@ const defaultConfig = require("./defaultConfig");
     return format;
 }
 
-const loadConfig = function (){
-    let configPath = process.cwd()+path.sep+"config.js";
-    console.log(configPath);
-    if(fs.existsSync(configPath)){
+const loadConfig = function () {
+    let configPath = process.cwd() + path.sep + "config.js";
+    if (fs.existsSync(configPath)) {
         let config = require(configPath);
-        config = Object.assign(defaultConfig,config);
+        config = Object.assign(defaultConfig, config);
         return config;
-    }else{
+    } else {
         return defaultConfig;
     }
 }
 
+const _chooseShellTemplate = function (ctx) {
+    return ctx.$os === 'windows' ? './shell/pull-template-bat' : './shell/pull-template-sh';
+}
+
+const renderShell = async function (ctx) {
+    let info = {
+        docs: ctx.$config.options.docs,
+        workPath: ctx.$config.options.workPath,
+        buildCmd: ctx.$config.options.buildCmd
+    }
+    let output = await ejs.renderFile(_chooseShellTemplate(ctx), info);
+    return output;
+}
+/**
+ * 生成Shell
+ * @param {Object} ctx VuepressWS context
+ * @returns Shell Path
+ */
+const generateShell = function (ctx) {
+    let shellDir = `${ctx.$config.options.workPath}${path.sep}.vuepressws${path.sep}shell`
+    fs.existsSync(shellDir) == false && mkdirs(shellDir)
+    const targetFile = ctx.$os === 'windows' ? 'pull.bat' : 'pull.sh';
+    let shellPath = shellDir + path.sep + targetFile;
+    renderShell(ctx).then(data => {
+        fs.writeFileSync(shellPath, data, {
+            flag: "w+"
+        });
+    })
+    return shellPath;
+}
+const mkdirs = function (dirpath) {
+    if (!fs.existsSync(path.dirname(dirpath))) {
+        mkdirs(path.dirname(dirpath));
+    }
+    fs.mkdirSync(dirpath);
+}
 module.exports = {
     formatDate: formatDate,
-    loadConfig: loadConfig
+    loadConfig: loadConfig,
+    renderShell: renderShell,
+    generateShell: generateShell,
+    mkdirs: mkdirs
 }

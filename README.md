@@ -17,7 +17,7 @@ npm i vuepress-webhooks-server
 ```
 - 克隆文档到本地
     > 若无应先创建
-    - 将文档仓库重命名为`docs`（Vuepress需要）
+    - 将文档仓库重命名为`docs`（默认配置），如需自定义请修改`config.js`
 - 增加`config.js`
 其中`platform`、`key`、`git`为必选配置,其他选项视情况自行配置。
 ```js
@@ -49,6 +49,16 @@ module.exports = {
         
         // 自定义WebHook访问路径
         customUrl: "/webhook",
+
+        // 文档所在路径，若自定义应修改script中命令
+        docs:"./docs",
+        
+        // 工作目录
+        workPath:process.cwd(),
+        
+        // 编译命令，此项会渲染到pull.bat中，用来编译文件
+        buildCmd:"npm run vuepress build docs",
+
         // 成功响应结果
         responseSucc: {
             code: 200,
@@ -101,6 +111,9 @@ visit http://[host]:[port]/helloworld
 - 目录应如下
 ```
   -- vuepress-starter
+   |-- .vuepressws
+        |-- shell
+              |-- ...
    |-- docs
         |-- ......
    |

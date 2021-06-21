@@ -16,14 +16,8 @@ const log = function ({
     const levelRegExp = new RegExp('\\[level\\]', 'gm');
     const messageRegExp = new RegExp('\\[message\\]', 'gm');
 
-    _mkdirs = function (dirpath) {
-        if (!fs.existsSync(path.dirname(dirpath))) {
-            _mkdirs(path.dirname(dirpath));
-        }
-        fs.mkdirSync(dirpath);
-    }
     let dirPath = path.dirname(logStorage);
-    fs.existsSync(dirPath) == false && _mkdirs(dirPath);
+    fs.existsSync(dirPath) == false && utils.mkdirs(dirPath);
 
     const error = function (message) {
         logger('error', message);

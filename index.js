@@ -4,7 +4,6 @@ const utils = require('./util.js');
 const log = require('./log.js');
 
 const os = /^win/.test(process.platform) ? 'windows' : 'other'
-const _shell = os === 'windows' ? 'pull.bat' : 'pull.sh'
 
 // 初始化配置
 const config = utils.loadConfig();
@@ -42,6 +41,7 @@ const ctx = {
     $process: process,
 };
 
+const shell = utils.generateShell(ctx);
 
 const logger = log(ctx);
 ctx.$logger = logger;
@@ -52,12 +52,12 @@ app.use(express.static(public))
 app.get('/helloworld', (req, res) => {
     res.send('Hello World!')
 })
-
+logger.info(shell);
 app.all(customUrl, (req, res) => {
     if (method === req.method) {
         if (validators[platform](ctx, req)) {
             res.send(JSON.stringify(responseSucc));
-            exec.execFile(_shell, null, { cwd: __dirname + "/shell" }, function (error, stdout, stderr) {
+            exec.execFile(shell, null, { cwd: process.cwd() }, function (error, stdout, stderr) {
                 if (error) {
                     logger.error(error);
                 }
