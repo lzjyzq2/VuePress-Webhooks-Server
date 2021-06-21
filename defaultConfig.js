@@ -21,7 +21,7 @@ module.exports = {
         
         workPath:process.cwd(),
         
-        buildCmd:"npm run vuepress build docs",
+        buildCmd:"docs:build",
 
         responseSucc: {
             code: 200,

@@ -56,8 +56,10 @@ module.exports = {
         // 工作目录
         workPath:process.cwd(),
         
-        // 编译命令，此项会渲染到pull.bat中，用来编译文件
-        buildCmd:"npm run vuepress build docs",
+
+        // script中的编译命令
+        // 此项会渲染到pull.bat中，用来编译文件
+        buildCmd:"docs:build",
 
         // 成功响应结果
         responseSucc: {

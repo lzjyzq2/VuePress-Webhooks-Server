@@ -2,6 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const defaultConfig = require("./defaultConfig");
 const ejs = require("ejs");
+const _ = require('lodash');
 /**
  * 格式化时间与日期
  * yyyy - 年
@@ -49,7 +50,7 @@ const loadConfig = function () {
     let configPath = process.cwd() + path.sep + "config.js";
     if (fs.existsSync(configPath)) {
         let config = require(configPath);
-        config = Object.assign(defaultConfig, config);
+        config = _.defaultsDeep(config,defaultConfig)
         return config;
     } else {
         return defaultConfig;
@@ -57,7 +58,8 @@ const loadConfig = function () {
 }
 
 const _chooseShellTemplate = function (ctx) {
-    return ctx.$os === 'windows' ? './shell/pull-template-bat' : './shell/pull-template-sh';
+    let tmp = ctx.$os === 'windows' ? '/shell/pull-template-bat' : '/shell/pull-template-sh';
+    return `${__dirname}${path.sep}${tmp}`;
 }
 
 const renderShell = async function (ctx) {
