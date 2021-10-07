@@ -1,4 +1,5 @@
 const express = require('express');
+const cookieParser = require('cookie-parser');
 const exec = require('child_process');
 const utils = require('./util.js');
 const log = require('./log.js');
@@ -8,24 +9,28 @@ const os = /^win/.test(process.platform) ? 'windows' : 'other'
 // 初始化配置
 const config = utils.loadConfig();
 
-const { options: {
-    port,
-    public,
-    platform,
-    method,
-    type,
-    customUrl,
-    responseSucc,
-    responseFail,
-    responseErr,
-} } = config;
+const {
+    options: {
+        port,
+        public,
+        platform,
+        method,
+        type,
+        customUrl,
+        responseSucc,
+        responseFail,
+        responseErr,
+    }
+} = config;
 
 // 初始化express
 const app = express();
 if (type === 'json') {
     app.use(express.json())
 } else if (type === 'urlencoded') {
-    app.use(express.urlencoded({ extended: true }))
+    app.use(express.urlencoded({
+        extended: true
+    }))
 }
 
 // 初始化验证器
@@ -45,19 +50,68 @@ const shell = utils.generateShell(ctx);
 
 const logger = log(ctx);
 ctx.$logger = logger;
+app.use(cookieParser());
+logger.info(`访问验证是否启用：${config.options.requireLogin}`);
+app.use("/", (req, res, next) => {
+    if (config.options.requireLogin) {
+        let requestUrl = req.originalUrl;
+        let referer = req.headers.referer?req.headers.referer:'';
+        logger.info(`访问验证URL[${requestUrl}]`)
+        if (requestUrl.match(/^\/helloworld$/) || requestUrl.match(/^\/login$/)||requestUrl.match(/^\/api\/login/)||referer.indexOf('/login')>0) {
+            logger.info(`跳过验证`)
+            next('route');
+        } else {
+            if(req.cookies&&req.cookies.token){
+                let token = req.cookies.token;
+                let access = utils.checkToken(token, config.options.accessToken);
+                if(access){
+                    logger.info(`验证Token[${token}]:通过`)
+                    next('route');
+                }else{
+                    logger.info(`验证Token[${token}]:未通过`)
+                    res.redirect('/login');
+                }
+            }else{
+                logger.info(`登录验证:未通过`)
+                res.redirect('/login');
+            }
+        }
+    }else{
+        next();
+    }
 
+})
 logger.info("working in " + process.cwd());
 app.use(express.static(public))
 
 app.get('/helloworld', (req, res) => {
     res.send('Hello World!')
 })
+app.get('/login',(req,res)=>{
+    res.sendFile(__dirname + '/login.html',(err)=>{
+        if (err) {
+            logger.err(err);
+          }
+    })
+})
+app.get('/api/login',(req,res)=>{
+    let token = req.query.token?req.query.token:'';
+    logger.info(`访问验证[${token}]`)
+    if(token==config.options.accessToken){
+        res.cookie('token',utils.generateToken(config.options.accessToken))
+        res.send({code:200,message:"验证成功"});
+    }else{
+        res.send({code:400,message:"验证失败"});
+    }
+})
 logger.info(shell);
 app.all(customUrl, (req, res) => {
     if (method === req.method) {
         if (validators[platform](ctx, req)) {
             res.send(JSON.stringify(responseSucc));
-            exec.execFile(shell, null, { cwd: process.cwd() }, function (error, stdout, stderr) {
+            exec.execFile(shell, null, {
+                cwd: process.cwd()
+            }, function (error, stdout, stderr) {
                 if (error) {
                     logger.error(error);
                 }

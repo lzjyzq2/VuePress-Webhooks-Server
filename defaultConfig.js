@@ -9,6 +9,10 @@ module.exports = {
 
         key: "document-key-adihwwd3445ada",
 
+        requireLogin:false,
+
+        accessToken:"",
+
         platform: "github",
 
         method: "POST",

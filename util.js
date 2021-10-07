@@ -3,6 +3,7 @@ const path = require("path");
 const defaultConfig = require("./defaultConfig");
 const ejs = require("ejs");
 const _ = require('lodash');
+const crypto = require('crypto');
 /**
  * 格式化时间与日期
  * yyyy - 年
@@ -50,7 +51,7 @@ const loadConfig = function () {
     let configPath = process.cwd() + path.sep + "config.js";
     if (fs.existsSync(configPath)) {
         let config = require(configPath);
-        config = _.defaultsDeep(config,defaultConfig)
+        config = _.defaultsDeep(config, defaultConfig)
         return config;
     } else {
         return defaultConfig;
@@ -94,10 +95,42 @@ const mkdirs = function (dirpath) {
     }
     fs.mkdirSync(dirpath);
 }
+const checkToken = function (token, accessToken) {
+    let flag = true;
+    let subToken1 = token.substring(0, 32);
+    let subToken2 = token.substring(32, token.length);
+    let tempSubToken = crypto.createHash('md5').update(accessToken).digest("hex")
+    if(tempSubToken!=subToken1){
+        flag = false;
+    }
+    let timestamp = new Buffer.from(subToken2, 'hex').toString('utf8');
+    if (timestamp.length >= 45) {
+        let searchIndex = timestamp.lastIndexOf(subToken1);
+        if (searchIndex == timestamp.length - subToken1.length) {
+
+            timestamp = parseInt(timestamp.substring(0, searchIndex));
+            if (timestamp <= 0) {
+                flag = false;
+            }
+        } else {
+            flag = false;
+        }
+    } else {
+        flag = false;
+    }
+    return flag;
+}
+const generateToken = function(accessToken){
+    let subToken1 = crypto.createHash('md5').update(accessToken).digest("hex");
+    let timestamp = new Date().getTime();
+    return subToken1 + new Buffer.from(timestamp+subToken1).toString('hex');
+}
 module.exports = {
     formatDate: formatDate,
     loadConfig: loadConfig,
     renderShell: renderShell,
     generateShell: generateShell,
-    mkdirs: mkdirs
+    mkdirs: mkdirs,
+    checkToken:checkToken,
+    generateToken:generateToken
 }

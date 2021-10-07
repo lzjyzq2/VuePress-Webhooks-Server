@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>访问验证</title>
+    <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.8.0.js"></script>
+    <script type="text/javascript">
+      $(document).ready(() => {
+        $("#verification-btn").click(() => {
+          let accessToken = $("#accessToken").val();
+          $.get('/api/login?token='+accessToken,res=>{
+              if(res.code==200){
+                  console.log(window.location.protocol + '//' + window.location.host)
+                window.location.href=window.location.protocol + '//' + window.location.host;
+              }else{
+                  alert("验证错误");
+              }
+          })
+        });
+      });
+    </script>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .verification-box {
+        background: #f2f2f2;
+        border-radius: 10px;
+        padding: 16px;
+      }
+
+      input {
+        width: 100%;
+        padding: 12px 20px;
+        margin: 8px 0;
+        display: inline-block;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+
+      .verification-btn {
+        text-align: center;
+        width: 100%;
+        background-color: #4caf50;
+        color: white;
+        padding: 14px 20px;
+        margin: 8px 0;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      .verification-btn:hover {
+        background-color: #45a049;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="verification-box">
+      <input id="accessToken" type="text" placeholder="输入访问验证码" />
+      <div id="verification-btn" class="verification-btn">验证</div>
+    </div>
+  </body>
+</html>

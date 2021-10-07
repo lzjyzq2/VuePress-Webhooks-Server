@@ -201,7 +201,7 @@ module.export = function(ctx,req){
 module.exports = {
 
     // 装载验证器
-    plugins: {
+    validators: {
         "github": "./validator/github.js",
         "gitea":"./validator/gitea.js"
         // platform: js file path
@@ -211,6 +211,21 @@ module.exports = {
         // 以gitea为例
         platform:"gitea"
         ......
+    }
+}
+```
+## 访问验证
+如需对访问加以限制可在`config.js`中配置如下配置:
+```
+// 在config.js中配置
+module.exports = {
+
+    options:{
+        
+        //是否需要验证
+        requireLogin:true,
+        // 访问口令
+        accessToken:"需要输入的验证口令",
     }
 }
 ```
