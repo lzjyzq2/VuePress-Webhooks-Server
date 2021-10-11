@@ -52,31 +52,41 @@ const logger = log(ctx);
 ctx.$logger = logger;
 app.use(cookieParser());
 logger.info(`访问验证是否启用：${config.options.requireLogin}`);
+const skipValidationList = [
+    /^\/helloworld$/, /^\/login$/, /^\/api\/login/,new RegExp(customUrl,'g')
+]
 app.use("/", (req, res, next) => {
     if (config.options.requireLogin) {
         let requestUrl = req.originalUrl;
-        let referer = req.headers.referer?req.headers.referer:'';
+        let referer = req.headers.referer ? req.headers.referer : '';
         logger.info(`访问验证URL[${requestUrl}]`)
-        if (requestUrl.match(/^\/helloworld$/) || requestUrl.match(/^\/login$/)||requestUrl.match(/^\/api\/login/)||referer.indexOf('/login')>0) {
+        for (let i = 0; i < skipValidationList.length; i++) {
+            if (requestUrl.match(skipValidationList[i])) {
+                logger.info(`跳过验证`);
+                next('route');
+                return;
+            }
+        }
+        if (referer.indexOf('/login') > 0) {
             logger.info(`跳过验证`)
             next('route');
         } else {
-            if(req.cookies&&req.cookies.token){
+            if (req.cookies && req.cookies.token) {
                 let token = req.cookies.token;
                 let access = utils.checkToken(token, config.options.accessToken);
-                if(access){
+                if (access) {
                     logger.info(`验证Token[${token}]:通过`)
                     next('route');
-                }else{
+                } else {
                     logger.info(`验证Token[${token}]:未通过`)
                     res.redirect('/login');
                 }
-            }else{
+            } else {
                 logger.info(`登录验证:未通过`)
                 res.redirect('/login');
             }
         }
-    }else{
+    } else {
         next();
     }
 
@@ -87,21 +97,21 @@ app.use(express.static(public))
 app.get('/helloworld', (req, res) => {
     res.send('Hello World!')
 })
-app.get('/login',(req,res)=>{
-    res.sendFile(__dirname + '/login.html',(err)=>{
+app.get('/login', (req, res) => {
+    res.sendFile(__dirname + '/login.html', (err) => {
         if (err) {
             logger.err(err);
-          }
+        }
     })
 })
-app.get('/api/login',(req,res)=>{
-    let token = req.query.token?req.query.token:'';
+app.get('/api/login', (req, res) => {
+    let token = req.query.token ? req.query.token : '';
     logger.info(`访问验证[${token}]`)
-    if(token==config.options.accessToken){
-        res.cookie('token',utils.generateToken(config.options.accessToken))
-        res.send({code:200,message:"验证成功"});
-    }else{
-        res.send({code:400,message:"验证失败"});
+    if (token == config.options.accessToken) {
+        res.cookie('token', utils.generateToken(config.options.accessToken))
+        res.send({ code: 200, message: "验证成功" });
+    } else {
+        res.send({ code: 400, message: "验证失败" });
     }
 })
 logger.info(shell);
