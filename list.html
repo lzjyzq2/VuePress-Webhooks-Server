@@ -27,14 +27,13 @@
                 $(this).addClass("active")
             });
 
-
+            document.getElementById("iframe").onload = function () {
+                document.title = document.getElementById("iframe").contentWindow.document.title;
+            }
         })
 
         function navigateTo(url) {
             $("#iframe").attr("src", url);
-        }
-        document.getElementById("iframe").onload = function () {
-            document.title = document.getElementById("iframe").contentWindow.document.title;
         }
     </script>
     <style>
@@ -53,8 +52,31 @@
         .sider {
             background-color: rgb(121, 121, 121);
             min-width: 200px;
+            position: relative;
         }
 
+        .sider .switch{
+            width: 28px;
+            position: absolute;
+            right: -28px;
+            top: 50%;
+            writing-mode: vertical-lr;
+            -moz-user-select: none;
+            /*火狐*/
+
+            -webkit-user-select: none;
+            /*webkit浏览器*/
+
+            -ms-user-select: none;
+            /*IE10*/
+
+            -khtml-user-select: none;
+            /*早期浏览器*/
+
+            user-select: none;
+            cursor: pointer;
+            background-color: rgb(121, 121, 121);
+        }
         .sider .head {
             color: 32px;
             font-weight: bold;
@@ -111,6 +133,7 @@
 
 <body>
     <div class="sider">
+        <div class="switch">收起</div>
         <div class="head">
             站点列表
         </div>
