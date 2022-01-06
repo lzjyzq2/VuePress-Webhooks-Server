@@ -11,33 +11,22 @@ const config = utils.loadConfig();
 
 const {
     options: {
-        port,
-        public,
-        platform,
-        method,
-        type,
-        customUrl,
-        responseSucc,
-        responseFail,
-        responseErr,
+        port
     }
 } = config;
-
 // 初始化express
 const app = express();
-if (type === 'json') {
-    app.use(express.json())
-} else if (type === 'urlencoded') {
-    app.use(express.urlencoded({
-        extended: true
-    }))
-}
+app.use(express.json());
+app.use(express.urlencoded({
+    extended: true
+}));
 
 // 初始化验证器
 const validators = {};
 for (let validator in config.validators) {
     validators[validator] = require(config.validators[validator]);
 }
+
 // 初始化上下文
 const ctx = {
     $config: config,
@@ -46,22 +35,25 @@ const ctx = {
     $process: process,
 };
 
-const shell = utils.generateShell(ctx);
+const shellPathsCache = utils.generateShell(ctx);
 
 const logger = log(ctx);
 ctx.$logger = logger;
 app.use(cookieParser());
 logger.info(`访问验证是否启用：${config.options.requireLogin}`);
+
+// 当前列表内容将会跳过验证
 const skipValidationList = [
-    /^\/helloworld$/, /^\/login$/, /^\/api\/login/,new RegExp(customUrl,'g')
+    /^\/helloworld$/, /^\/login$/, /^\/api\/login/,/^\/api\/docs/, /^\/list$/
 ]
+
 app.use("/", (req, res, next) => {
     if (config.options.requireLogin) {
         let requestUrl = req.originalUrl;
         let referer = req.headers.referer ? req.headers.referer : '';
-        logger.info(`访问验证URL[${requestUrl}]`)
-        for (let i = 0; i < skipValidationList.length; i++) {
-            if (requestUrl.match(skipValidationList[i])) {
+        logger.info(`访问验证URL[${requestUrl}]`);
+        for (const skipValidation of skipValidationList) {
+            if (requestUrl.match(skipValidation)) {
                 logger.info(`跳过验证`);
                 next('route');
                 return;
@@ -92,13 +84,19 @@ app.use("/", (req, res, next) => {
 
 })
 logger.info("working in " + process.cwd());
-app.use(express.static(public))
 
 app.get('/helloworld', (req, res) => {
     res.send('Hello World!')
 })
 app.get('/login', (req, res) => {
     res.sendFile(__dirname + '/login.html', (err) => {
+        if (err) {
+            logger.err(err);
+        }
+    })
+})
+app.get('/list', (req, res) => {
+    res.sendFile(__dirname + '/list.html', (err) => {
         if (err) {
             logger.err(err);
         }
@@ -114,32 +112,47 @@ app.get('/api/login', (req, res) => {
         res.send({ code: 400, message: "验证失败" });
     }
 })
-logger.info(shell);
-app.all(customUrl, (req, res) => {
-    if (method === req.method) {
-        if (validators[platform](ctx, req)) {
-            res.send(JSON.stringify(responseSucc));
-            exec.execFile(shell, null, {
-                cwd: process.cwd()
-            }, function (error, stdout, stderr) {
-                if (error) {
-                    logger.error(error);
-                }
-                logger.info(stdout);
-                if (stderr) {
-                    logger.error(stderr);
-                }
-                if (!error && !stderr) {
-                    logger.info("build successful");
-                }
-            })
-        } else {
-            res.send(JSON.stringify(responseFail));
+
+app.get('/api/docs',(req,res)=>{
+    try{
+        let docs = [];
+        for (const item of config.options.tasks) {
+            docs.push({name:item.name,url:item.url})
         }
-    } else {
-        res.send(responseErr)
+        res.send({code:200,message:"获取成功",data:docs});
+    }catch(err){
+        logger.error(err);
+        res.send({ code: 400, message: "获取文档列表失败" });
     }
 })
+for (const shellPathName of Object.keys(shellPathsCache)) {
+    logger.info(`Shell Path[${shellPathName}]:${shellPathsCache[shellPathName]}`);
+}
+
+for (const item of config.options.tasks) {
+    skipValidationList.push(new RegExp(item.customUrl, 'g'));
+    app.use(item.url,express.static(item.public))
+    app.all(item.customUrl, (req, res) => {
+        if (item.method === req.method) {
+            if (validators[item.platform](ctx, req)) {
+                res.send(JSON.stringify(item.responseSucc));
+                let out = exec.execFile(shellPathsCache[item.name], null, {
+                    cwd: process.cwd()
+                });
+                out.stdout.on('data', (data) => {
+                    if(data!==''){
+                        logger.info(data);
+                    }
+                });
+            } else {
+                res.send(JSON.stringify(item.responseFail));
+            }
+        } else {
+            res.send(item.responseErr)
+        }
+    })
+}
+
 app.listen(port, () => {
     logger.info(`app listening at http://localhost:${port}`);
 })

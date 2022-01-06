@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="cmn-Hans">
+
+<head>
+    <title>List</title>
+    <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.8.0.js"></script>
+    <script type="text/javascript">
+        $(document).ready(() => {
+            $.get('/api/docs', res => {
+                if (res.code == 200) {
+                    let menu = $("#menu");
+                    res.data.forEach(e => {
+                        menu.append(`<li onclick="navigateTo('${e.url}')">${e.name}</li>`)
+                    });
+                    $("#menu>li")
+                    if ($("#menu>li").length > 0) {
+                        $("#menu>li:first").addClass("active");
+                        $("#iframe").attr("src", res.data[0].url);
+                    }
+                } else {
+                    alert("获取文档列表错误");
+                }
+            })
+
+            $("#menu>li").live("click", function () {
+                $("#menu>li").removeClass("active")
+                $(this).addClass("active")
+            });
+
+
+        })
+
+        function navigateTo(url) {
+            $("#iframe").attr("src", url);
+        }
+        document.getElementById("iframe").onload = function () {
+            document.title = document.getElementById("iframe").contentWindow.document.title;
+        }
+    </script>
+    <style>
+        * {
+            box-sizing: border-box;
+            padding: 0;
+            margin: 0;
+        }
+
+        body {
+            height: 100vh;
+            display: flex;
+            flex-direction: row;
+        }
+
+        .sider {
+            background-color: rgb(121, 121, 121);
+            min-width: 200px;
+        }
+
+        .sider .head {
+            color: 32px;
+            font-weight: bold;
+            padding: 10px 0px 10px 8px;
+            color: white;
+            border-bottom: 1px solid silver;
+        }
+
+        .sider ul {
+            -moz-user-select: none;
+            /*火狐*/
+
+            -webkit-user-select: none;
+            /*webkit浏览器*/
+
+            -ms-user-select: none;
+            /*IE10*/
+
+            -khtml-user-select: none;
+            /*早期浏览器*/
+
+            user-select: none;
+        }
+
+        .sider ul li {
+            list-style: none;
+            height: 28px;
+            line-height: 28px;
+            font-size: 16px;
+            color: white;
+            padding-left: 8px;
+        }
+
+        .sider ul li:hover {
+            cursor: pointer;
+        }
+
+        .sider ul li:hover,
+        .sider ul li.active {
+            background-color: aliceblue;
+            color: rgb(0, 0, 0);
+        }
+
+        .main {
+            flex: 1;
+        }
+
+        .main iframe {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="sider">
+        <div class="head">
+            站点列表
+        </div>
+        <ul id="menu">
+            <!-- 此处为列表 -->
+        </ul>
+    </div>
+    <div class="main">
+        <iframe id="iframe" src=""></iframe>
+    </div>
+</body>
+
+</html>

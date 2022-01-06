@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="cmn-Hans">
   <head>
     <title>访问验证</title>
     <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.8.0.js"></script>
@@ -9,8 +9,7 @@
           let accessToken = $("#accessToken").val();
           $.get('/api/login?token='+accessToken,res=>{
               if(res.code==200){
-                  console.log(window.location.protocol + '//' + window.location.host)
-                window.location.href=window.location.protocol + '//' + window.location.host;
+                window.location.href=window.location.protocol + '//' + window.location.host + "/list";
               }else{
                   alert("验证错误");
               }
