@@ -26,6 +26,23 @@
                 $("#menu>li").removeClass("active")
                 $(this).addClass("active")
             });
+            $("#fold").click(function () {
+                let sider = $(".sider");
+                $(this).addClass("hide");
+                $("#unfold").removeClass("hide");
+                sider.animate({
+                    width: "0px"
+                });
+            });
+            $("#unfold").click(function () {
+                let sider = $(".sider");
+                $(this).addClass("hide");
+                $("#fold").removeClass("hide");
+                sider.animate({
+                    width: "200px"
+                });
+            });
+
 
             document.getElementById("iframe").onload = function () {
                 document.title = document.getElementById("iframe").contentWindow.document.title;
@@ -51,16 +68,18 @@
 
         .sider {
             background-color: rgb(121, 121, 121);
-            min-width: 200px;
+            width: 200px;
             position: relative;
+            overflow: visible !important;
+            z-index: 1;
         }
 
-        .sider .switch{
+        .sider .switch {
             width: 28px;
             position: absolute;
             right: -28px;
             top: 50%;
-            writing-mode: vertical-lr;
+
             -moz-user-select: none;
             /*火狐*/
 
@@ -77,6 +96,11 @@
             cursor: pointer;
             background-color: rgb(121, 121, 121);
         }
+
+        .sider .switch.hide {
+            visibility: hidden;
+        }
+
         .sider .head {
             color: 32px;
             font-weight: bold;
@@ -86,6 +110,7 @@
         }
 
         .sider ul {
+            overflow: hidden;
             -moz-user-select: none;
             /*火狐*/
 
@@ -133,7 +158,38 @@
 
 <body>
     <div class="sider">
-        <div class="switch">收起</div>
+        <div class="switch" id="fold">
+            <svg t="1641522035705" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
+                p-id="7151" xmlns:xlink="http://www.w3.org/1999/xlink">
+                <defs>
+                    <style type="text/css">
+                        @font-face {
+                            font-family: element-icons;
+                            src: url("chrome-extension://dkbiiofameebehokbgjmdcholafphbnl/fonts/element-icons.woff") format("woff"), url("chrome-extension://dkbiiofameebehokbgjmdcholafphbnl/fonts/element-icons.ttf ") format("truetype");
+                        }
+                    </style>
+                </defs>
+                <path
+                    d="M853.333333 714.666667v64H170.666667v-64h682.666666zM320 405.333333v213.333334l-149.333333-106.666667 149.333333-106.666667z m533.333333 85.333334v64H405.333333v-64h448z m0-234.666667v64H170.666667v-64h682.666666z"
+                    p-id="7152" fill="#ffffff"></path>
+            </svg>
+        </div>
+        <div class="switch hide" id="unfold">
+            <svg t="1641522023420" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
+                p-id="6964" xmlns:xlink="http://www.w3.org/1999/xlink">
+                <defs>
+                    <style type="text/css">
+                        @font-face {
+                            font-family: element-icons;
+                            src: url("chrome-extension://dkbiiofameebehokbgjmdcholafphbnl/fonts/element-icons.woff") format("woff"), url("chrome-extension://dkbiiofameebehokbgjmdcholafphbnl/fonts/element-icons.ttf ") format("truetype");
+                        }
+                    </style>
+                </defs>
+                <path
+                    d="M853.333333 725.034667v64H170.666667v-64h682.666666z m-149.333333-309.333334l149.333333 106.666667-149.333333 106.666667v-213.333334z m-85.333333 74.666667v64H170.666667v-64h448zM853.333333 256v64H170.666667v-64h682.666666z"
+                    p-id="6965" fill="#ffffff"></path>
+            </svg>
+        </div>
         <div class="head">
             站点列表
         </div>
@@ -142,7 +198,7 @@
         </ul>
     </div>
     <div class="main">
-        <iframe id="iframe" src=""></iframe>
+        <iframe id="iframe" src="" frameborder="0"></iframe>
     </div>
 </body>
 
