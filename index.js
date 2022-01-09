@@ -3,6 +3,7 @@ const cookieParser = require('cookie-parser');
 const exec = require('child_process');
 const utils = require('./util.js');
 const log = require('./log.js');
+const database = require("./db/database.js");
 
 const os = /^win/.test(process.platform) ? 'windows' : 'other'
 
@@ -39,6 +40,10 @@ const shellPathsCache = utils.generateShell(ctx);
 
 const logger = log(ctx);
 ctx.$logger = logger;
+
+const db = database();
+ctx.$db = db;
+
 app.use(cookieParser());
 logger.info(`访问验证是否启用：${config.options.requireLogin}`);
 
@@ -104,7 +109,7 @@ app.get('/list', (req, res) => {
 })
 app.get('/api/login', (req, res) => {
     let token = req.query.token ? req.query.token : '';
-    logger.info(`访问验证[${token}]`)
+    logger.info(`登录验证[${token}]`)
     if (token == config.options.accessToken) {
         res.cookie('token', utils.generateToken(config.options.accessToken))
         res.send({ code: 200, message: "验证成功" });

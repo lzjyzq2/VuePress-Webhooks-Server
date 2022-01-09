@@ -8,4 +8,8 @@ program.command("run")
     .action(() => {
         require('../index')
     })
+program.command("user")
+    .option("-add,-a")
+    .option("-remove,-r")
+    .option("-disable,-d")
 program.parse(process.argv);

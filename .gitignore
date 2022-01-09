@@ -352,3 +352,4 @@ MigrationBackup/
 config.js
 docs
 .vuepressws/
+db/database.sqlite
