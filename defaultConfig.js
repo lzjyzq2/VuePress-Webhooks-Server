@@ -21,6 +21,8 @@ module.exports = {
         // 日志存储位置
         logStorage: "./log/log.log",
 
+        email:null,
+
         // 任务
         tasks:[
             {

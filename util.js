@@ -4,6 +4,8 @@ const defaultConfig = require("./defaultConfig");
 const ejs = require("ejs");
 const _ = require('lodash');
 const crypto = require('crypto');
+const database = require("./db/database");
+const db = database();
 
 /**
  * 格式化时间与日期
@@ -64,7 +66,7 @@ const _chooseShellTemplate = function (ctx) {
     return `${__dirname}${path.sep}${tmp}`;
 }
 
-const renderShell = async function (ctx,item) {
+const renderShell = async function (ctx, item) {
     let info = {
         docs: item.docs,
         workPath: item.workPath,
@@ -85,7 +87,7 @@ const generateShell = function (ctx) {
     for (const item of ctx.$config.options.tasks) {
         let targetFile = item.name + (ctx.$os === 'windows' ? '.bat' : '.sh');
         let shellPath = shellDir + path.sep + targetFile;
-        renderShell(ctx,item).then(data => {
+        renderShell(ctx, item).then(data => {
             fs.writeFileSync(shellPath, data, {
                 flag: "w+"
             });
@@ -162,10 +164,10 @@ const convertOldOption = function (option) {
             "responseErr",
             "git"
         ];
-        if(!option.tasks){
+        if (!option.tasks) {
             option.tasks = [];
         }
-        let tempTask = {name:"default",url:"/"};
+        let tempTask = { name: "default", url: "/" };
         for (const attr of attrs) {
             if (option.hasOwnProperty(attr)) {
                 tempTask[attr] = option[attr];
@@ -177,6 +179,66 @@ const convertOldOption = function (option) {
     return option;
 }
 
+/**
+ * 获取一个指定长度的字符串
+ * @param {Number} e 长度
+ * @returns 随机字符串
+ */
+const randomString = function (e) {
+    e = e || 32;
+    var t = "ABCDEFGHJKMNPQRSTWXYZabcdefhijkmnprstwxyz2345678",
+        a = t.length,
+        n = "";
+    for (let i = 0; i < e; i++) n += t.charAt(Math.floor(Math.random() * a));
+    return n
+}
+
+/**
+ * 注册用户
+ * @param {String} username 用户名
+ * @param {String} password 密码
+ * @param {String} email 邮箱
+ * @returns 注册结果 1-成功,0-失败(已存在该用户)
+ */
+const register = async function (username, password, email) {
+    try {
+        if(!username||!password||!email){
+            return -1;
+        }
+        const salt = randomString(8);
+        let existUser = await db.table.User.findOne({ where: { username } })
+        if (!existUser) {
+            const practicalPwd = _convertPwd(password, salt);
+            const user = db.table.User.build({ username, password: practicalPwd, email, salt });
+            await user.save();
+            return 1;
+        } else {
+            return 0;
+        }
+    } catch (err) {
+        console.log(err);
+    }
+}
+
+/**
+ * 发送邮件
+ */
+const sendMail = function(){
+    
+}
+
+/**
+ * 加密密码
+ * @param {string} password 密码
+ * @param {String} salt 盐值
+ * @returns 加密后密码
+ */
+const _convertPwd = function (password, salt) {
+    let hashCrypto1 = crypto.createHash('SHA256');
+    let hashCrypto2 = crypto.createHash('SHA256');
+    return hashCrypto1.update(hashCrypto2.update(password).digest('hex') + salt).digest('hex');
+}
+
 module.exports = {
     formatDate: formatDate,
     loadConfig: loadConfig,
@@ -186,5 +248,6 @@ module.exports = {
     checkToken: checkToken,
     generateToken: generateToken,
     convertOldOption: convertOldOption,
-    isOldOption: isOldOption
+    isOldOption: isOldOption,
+    register: register
 }
