@@ -53,6 +53,10 @@ User.init({
     salt: {
         type: DataTypes.STRING,
         allowNull: false,
+    },
+    // 验证码
+    captcha: {
+        type: DataTypes.STRING,
     }
 }, {
     // 这是其他模型参数

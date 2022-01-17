@@ -5,6 +5,7 @@ const ejs = require("ejs");
 const _ = require('lodash');
 const crypto = require('crypto');
 const database = require("./db/database");
+const nodemailer = require("nodemailer");
 const db = database();
 
 /**
@@ -114,7 +115,6 @@ const checkToken = function (token, accessToken) {
     if (timestamp.length >= 45) {
         let searchIndex = timestamp.lastIndexOf(subToken1);
         if (searchIndex == timestamp.length - subToken1.length) {
-
             timestamp = parseInt(timestamp.substring(0, searchIndex));
             if (timestamp <= 0) {
                 flag = false;
@@ -131,6 +131,36 @@ const generateToken = function (accessToken) {
     let subToken1 = crypto.createHash('md5').update(accessToken).digest("hex");
     let timestamp = new Date().getTime();
     return subToken1 + new Buffer.from(timestamp + subToken1).toString('hex');
+}
+
+/**
+ * 通过Username生成Token
+ */
+const generateLoginToken = function (username) {
+    let token = crypto.createHash('SHA256').update(new Date().getTime() + '').digest("hex");
+    let user = { username, token };
+    return new Buffer.from(JSON.stringify(user)).toString('hex');
+}
+
+/**
+ * 验证Token是否正确
+ * @param {String} token token
+ * @returns true正确 false失败
+ */
+const checkLoginToken = async function (token) {
+    console.log("checkLoginToken", token)
+    let flag = false;
+    try {
+        let { username } = JSON.parse(new Buffer.from(token, 'hex').toString('utf8'));
+        let user = await db.table.User.findOne({ where: { username } });
+        if (user.authenticated && user.available && user.token === token) {
+            flag = true;
+        }
+    } catch (err) {
+        console.log(err);
+        flag = false;
+    }
+    return flag;
 }
 
 /**
@@ -202,14 +232,18 @@ const randomString = function (e) {
  */
 const register = async function (username, password, email) {
     try {
-        if(!username||!password||!email){
+        if (!username || !password || !email) {
             return -1;
         }
         const salt = randomString(8);
         let existUser = await db.table.User.findOne({ where: { username } })
         if (!existUser) {
             const practicalPwd = _convertPwd(password, salt);
-            const user = db.table.User.build({ username, password: practicalPwd, email, salt });
+            let captcha = randomString(6);
+            const user = db.table.User.build({ username, password: practicalPwd, email, salt, captcha });
+            const config = loadConfig();
+            let emailContent = `验证码:${captcha}\n验证地址:${config.options.email.conf.host}/activate`;
+            sendMail(config.options.email.conf.from, email, config.options.email.conf.registerTitle, emailContent, '')
             await user.save();
             return 1;
         } else {
@@ -223,8 +257,21 @@ const register = async function (username, password, email) {
 /**
  * 发送邮件
  */
-const sendMail = function(){
-    
+const sendMail = async function (from, to, subject, text, html) {
+    const config = loadConfig();
+    if (config.options.email && config.options.email.host) {
+        // create reusable transporter object using the default SMTP transport
+        let transporter = nodemailer.createTransport(config.options.email.host);
+        await transporter.sendMail({
+            from, // sender address
+            to, // list of receivers
+            subject, // Subject line
+            text, // plain text body
+            html, // html body
+        });
+    } else {
+        console.log("发送邮件失败")
+    }
 }
 
 /**
@@ -239,6 +286,37 @@ const _convertPwd = function (password, salt) {
     return hashCrypto1.update(hashCrypto2.update(password).digest('hex') + salt).digest('hex');
 }
 
+/**
+ * 移除用户
+ * @param {String} username 用户名称
+ * @returns 移除结果 0-不存在用户 1-已移除用户
+ */
+const removeUser = async function (username) {
+    let user = await db.table.User.findOne({ where: { username } })
+    if (user) {
+        await user.destroy();
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+/**
+ * 禁用用户
+ * @param {String} username 用户名称
+ * @returns 禁用结果 0-不存在用户 1-已禁用用户
+ */
+const disableUser = async function (username, disable) {
+    let user = await db.table.User.findOne({ where: { username } })
+    if (user) {
+        user.available = disable === 'dis' ? false : true;
+        await user.save();
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
 module.exports = {
     formatDate: formatDate,
     loadConfig: loadConfig,
@@ -249,5 +327,10 @@ module.exports = {
     generateToken: generateToken,
     convertOldOption: convertOldOption,
     isOldOption: isOldOption,
-    register: register
+    register: register,
+    _convertPwd: _convertPwd,
+    generateLoginToken: generateLoginToken,
+    checkLoginToken: checkLoginToken,
+    removeUser: removeUser,
+    disableUser: disableUser
 }
