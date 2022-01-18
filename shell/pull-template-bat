@@ -1,10 +1,19 @@
-@echo off
-chcp 65001
-rem 进入docs文件夹
+@echo off  
+
+chcp 65001  
+
+:: 进入docs文件夹
+
 cd "<%=docs %>"
-rem 拉取docs文档
+
+:: 拉取docs文档
+
 git pull
-rem 返回上级目录
+
+:: 返回上级目录
+
 cd "<%=workPath %>"
-rem 生成静态文件
+
+:: 生成静态文件
+
 npm run <%=buildCmd %>
