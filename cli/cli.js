@@ -15,7 +15,6 @@ program.command("run")
 program.command("add-user <username> <password> <email>")
     .description("添加一个用户,其格式为:用户名称 用户密码 用户邮件；\n例如:example@ex.com password example@ex.com")
     .action(async (username, password, email) => {
-        //console.log(username,password,email)
         let result = await util.register(username, password, email);
         if (result == 0) {
             console.log("添加失败，已存在该用户");
