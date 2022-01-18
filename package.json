@@ -25,7 +25,9 @@
     "lodash": "^4.17.21",
     "nodemailer": "^6.7.2",
     "sequelize": "^6.12.5",
-    "sqlite3": "^5.0.2",
+    "sqlite3": "^5.0.2"
+  },
+  "devDependencies": {
     "vuepress": "^1.8.2"
   },
   "keywords": [
