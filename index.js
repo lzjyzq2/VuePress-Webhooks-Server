@@ -218,10 +218,10 @@ for (const item of config.options.tasks) {
                     }
                 });
             } else {
-                res.status(responseFail.code).send(JSON.stringify(item.responseFail));
+                res.status(item.responseFail.code).send(JSON.stringify(item.responseFail));
             }
         } else {
-            res.status(responseErr.code).send(item.responseErr)
+            res.status(item.responseErr.code).send(item.responseErr)
         }
     })
 }
