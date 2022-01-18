@@ -4,7 +4,7 @@ const exec = require('child_process');
 const utils = require('./util.js');
 const log = require('./log.js');
 const database = require("./db/database.js");
-const res = require('express/lib/response');
+const path = require('path');
 
 const os = /^win/.test(process.platform) ? 'windows' : 'other'
 
@@ -136,7 +136,7 @@ app.get('/api/login', async (req, res) => {
             let user = await db.table.User.findOne({ where: { username } });
             if (user) {
                 // 用户已验证&&用户可用&&密码正确
-                if (user.authenticated&&user.available&&utils._convertPwd(password, user.salt) === user.password) {
+                if (user.authenticated && user.available && utils._convertPwd(password, user.salt) === user.password) {
                     let token = utils.generateLoginToken(username)
                     user.token = token;
                     user.save();
@@ -204,10 +204,10 @@ for (const shellPathName of Object.keys(shellPathsCache)) {
 
 for (const item of config.options.tasks) {
     skipValidationList.push(new RegExp(item.customUrl, 'g'));
-    app.use(item.url, express.static(item.public))
+    app.use(item.url, express.static(path.resolve(item.public)));
     app.all(item.customUrl, (req, res) => {
         if (item.method === req.method) {
-            if (validators[item.platform](ctx, req)) {
+            if (validators[item.platform](ctx, req,item)) {
                 res.send(JSON.stringify(item.responseSucc));
                 let out = exec.execFile(shellPathsCache[item.name], null, {
                     cwd: process.cwd()
@@ -218,10 +218,10 @@ for (const item of config.options.tasks) {
                     }
                 });
             } else {
-                res.send(JSON.stringify(item.responseFail));
+                res.status(responseFail.code).send(JSON.stringify(item.responseFail));
             }
         } else {
-            res.send(item.responseErr)
+            res.status(responseErr.code).send(item.responseErr)
         }
     })
 }

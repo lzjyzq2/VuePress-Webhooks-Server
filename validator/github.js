@@ -3,14 +3,14 @@ const crypto = require('crypto');
 const gitub = function ({
     $config,
     $logger
-}, req) {
+}, req, item) {
     let flag = false;
     let header = req.headers;
     let body = req.body;
     $logger.info("start validation");
-    if (/^GitHub-Hookshot/.test(header['user-agent']) && header['content-type'].indexOf($config.options.type) != -1 && verift_repository(body,$config.options.git)) {
+    if (/^GitHub-Hookshot/.test(header['user-agent']) && header['content-type'].indexOf(item.type) != -1 && verify_repository(body, item.git)) {
         $logger.info("Delivery:" + header['x-github-delivery']);
-        let signature = verify_signature(JSON.stringify(body), $config.options.key, 'sha256');
+        let signature = verify_signature(JSON.stringify(body), item.key, 'sha256');
         if ('sha256=' + signature === header['x-hub-signature-256']) {
             $logger.info("validation successful");
             flag = true;
@@ -28,11 +28,11 @@ const verify_signature = function (payload_body, secrectKey, method) {
         .toString('hex');
     return signature;
 }
-const verift_repository = function (body, git) {
+const verify_repository = function (body, git) {
     let repository = body['repository'];
     if (repository['git_url'] === git || repository['ssh_url'] === git || repository['clone_url'] === git || repository['svn_url'] === git) {
         return true;
-    }else{
+    } else {
         return false;
     }
 }
